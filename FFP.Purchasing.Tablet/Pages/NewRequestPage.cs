@@ -25,7 +25,7 @@ public sealed class NewRequestPage : ContentPage
     }
     protected override async void OnAppearing()
     {
-        base.OnAppearing(); await _reference.RefreshAsync(); _vendors=await _reference.GetVendorsAsync();
+        base.OnAppearing(); await _reference.RefreshVendorsAsync(); _vendors=await _reference.GetVendorsAsync();
         _vendor.ItemsSource=_vendors.Select(x=>x.Name).ToList();
     }
     private async void Save(object? s, EventArgs e)
@@ -34,8 +34,6 @@ public sealed class NewRequestPage : ContentPage
         var r=new PurchaseRequest { Type=_type.SelectedIndex==1?RequestType.PaymentRequisition:RequestType.PurchaseOrder,
             Requestor=_requestor.Text??"", Department=_department.Text??"", VendorId=v?.Id, VendorName=v?.Name, Purpose=_purpose.Text??"" };
         await _store.SaveAsync(r);
-        await Navigation.PushAsync(new RequestEditorPage(r,_store,_reference,
-            Handler!.MauiContext!.Services.GetRequiredService<IAttachmentService>(),
-            Handler!.MauiContext!.Services.GetRequiredService<ISyncService>()));
+        await Navigation.PushAsync(new RequestEditorPage(r,_store,Handler!.MauiContext!.Services.GetRequiredService<ILocalItemCache>(),Handler!.MauiContext!.Services.GetRequiredService<IAttachmentService>(),Handler!.MauiContext!.Services.GetRequiredService<ISyncService>(),Handler!.MauiContext!.Services.GetRequiredService<IRequestValidator>(),Handler!.MauiContext!.Services.GetRequiredService<IAuditService>()));
     }
 }
