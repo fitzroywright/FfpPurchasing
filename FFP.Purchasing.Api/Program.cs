@@ -6,8 +6,7 @@ var root=Path.Combine(app.Environment.ContentRootPath,"data");Directory.CreateDi
 var attachments=Path.Combine(root,"attachments");Directory.CreateDirectory(attachments);
 
 app.MapGet("/health",()=>Results.Ok(new{status="Healthy",service="FFP.Purchasing.Api",utc=DateTimeOffset.UtcNow}));
-app.MapGet("/api/reference/vendors",()=>Results.Ok(new[]{new{Id="V001",Name="Sample Vendor",TaxNumber=""}}));
-app.MapGet("/api/reference/items",()=>Results.Ok(new[]{new{Id="I001",Description="Sample Item",Uom="EA",LastPrice=0m}}));
+app.MapGet("/api/mock-ffp-manager/vendors",()=>Results.Ok(new[]{new{Id="V001",Name="GraceKennedy Limited",TaxNumber="100001"},new{Id="V002",Name="Hardware & Lumber",TaxNumber="100002"},new{Id="V003",Name="Stationery Centre Limited",TaxNumber="100003"},new{Id="V004",Name="Massy Distribution",TaxNumber="100004"}}));
 app.MapPost("/api/purchasing/requests",async(HttpRequest http)=>{
     if(!http.HasFormContentType)return Results.BadRequest("multipart/form-data required");
     var form=await http.ReadFormAsync();var request=form["request"].FirstOrDefault();
