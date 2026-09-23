@@ -18,7 +18,7 @@ public partial class MainPage : ContentPage
         InitializeComponent(); _attachments=attachments; _store=store; _reference=reference; _sync=sync; _diagnostics=diagnostics;
         Title="FFP Purchasing";
         ToolbarItems.Add(new ToolbarItem("New",null,async()=>await Navigation.PushAsync(new NewRequestPage(_store,_reference))));
-        ToolbarItems.Add(new ToolbarItem("Requests",null,async()=>await Navigation.PushAsync(new RequestsPage(_store,_reference,_attachments,_sync))));
+        ToolbarItems.Add(new ToolbarItem("Requests",null,async()=>await Navigation.PushAsync(new RequestsPage(_store,Handler!.MauiContext!.Services.GetRequiredService<ILocalItemCache>(),_attachments,_sync,Handler!.MauiContext!.Services.GetRequiredService<IRequestValidator>(),Handler!.MauiContext!.Services.GetRequiredService<IAuditService>()))));
         ToolbarItems.Add(new ToolbarItem("Diagnostics",null,async()=>await Navigation.PushAsync(new DiagnosticsPage(_diagnostics))));
         ToolbarItems.Add(new ToolbarItem("Settings",null,async()=>await Navigation.PushAsync(new SettingsPage())));
     }
