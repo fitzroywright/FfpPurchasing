@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="FFP.Purchasing.Tablet.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="New Purchase Order"
+    BackgroundColor="#F7F9FC">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="24" RowSpacing="16">
+        <VerticalStackLayout Grid.Row="0" Spacing="5">
+            <Label Text="FFP Manager" FontSize="14" TextColor="#0B4F8A" FontAttributes="Bold"/>
+            <Label Text="Supporting Documents" FontSize="28" FontAttributes="Bold" TextColor="#17233C"/>
+            <Label Text="Attach quotations, invoices, receipts, photos or other supporting evidence."
+                   TextColor="#5B667A"/>
+        </VerticalStackLayout>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="14">
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+                    <Button Grid.Column="0" Text="Take Photo" Clicked="TakePhoto_Clicked"
+                            BackgroundColor="#0B4F8A" TextColor="White"/>
+                    <Button Grid.Column="1" Text="Choose Files" Clicked="ChooseFiles_Clicked"
+                            BackgroundColor="#EAF3FB" TextColor="#0B4F8A"/>
+                    <Button Grid.Column="2" Text="Import Shared" Clicked="ImportShared_Clicked"
+                            BackgroundColor="#EAF3FB" TextColor="#0B4F8A"/>
+                </Grid>
+
+                <Border BackgroundColor="White" Stroke="#D9E2EC" StrokeThickness="1" Padding="16">
+                    <VerticalStackLayout>
+                        <Label Text="Attachments" FontSize="18" FontAttributes="Bold"/>
+                        <Label x:Name="EmptyLabel" Text="No supporting documents attached."
+                               Margin="0,10,0,0" TextColor="#6B7280"/>
+                        <VerticalStackLayout x:Name="AttachmentList" Spacing="8" Margin="0,10,0,0"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border BackgroundColor="#FFF8E6" Stroke="#F0C36A" Padding="12">
+                    <Label Text="Offline safe: attachments are copied into app storage immediately and remain Pending Sync until the purchasing service acknowledges them."
+                           TextColor="#6A4B00"/>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
+            <Label Text="Draft • attachments pending sync" VerticalOptions="Center" TextColor="#6B7280"/>
+            <Button Grid.Column="1" Text="Next: Review" HorizontalOptions="End"
+                    BackgroundColor="#0B4F8A" TextColor="White"/>
+        </Grid>
+    </Grid>
+</ContentPage>
