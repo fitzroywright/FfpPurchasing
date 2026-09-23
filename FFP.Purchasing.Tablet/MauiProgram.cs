@@ -19,6 +19,9 @@ public static class MauiProgram
         builder.Services.AddSingleton<IReferenceDataService, ReferenceDataService>();
         builder.Services.AddSingleton<ISyncService, SyncService>();
         builder.Services.AddSingleton<IAppDiagnostics, AppDiagnostics>();
+        builder.Services.AddSingleton<IRequestValidator, RequestValidator>();
+        builder.Services.AddSingleton<IAuditService, AuditService>();
+        builder.Services.AddSingleton<IPendingSyncWorker, PendingSyncWorker>();
         builder.Services.AddSingleton<MainPage>();
         return builder.Build();
     }
