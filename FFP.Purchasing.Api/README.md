@@ -1,0 +1,2 @@
+# FFP Purchasing API
+Minimal runnable server contract for the tablet application. The reference endpoints currently contain placeholder sample data and are the seam where FFP Manager vendor/item adapters belong. Submitted request JSON and attachments are durably stored under data/ for this first vertical slice; production persistence and FFP Manager posting are the next adapter implementation, not a tablet rewrite.
