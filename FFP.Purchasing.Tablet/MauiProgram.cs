@@ -17,6 +17,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IAttachmentService, AttachmentService>();
         builder.Services.AddSingleton<IPurchaseStore, PurchaseStore>();
         builder.Services.AddSingleton<IReferenceDataService, ReferenceDataService>();
+        builder.Services.AddSingleton<ILocalItemCache, LocalItemCache>();
         builder.Services.AddSingleton<ISyncService, SyncService>();
         builder.Services.AddSingleton<IAppDiagnostics, AppDiagnostics>();
         builder.Services.AddSingleton<IRequestValidator, RequestValidator>();
