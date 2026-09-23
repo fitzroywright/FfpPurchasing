@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using FFP.Purchasing.Tablet.Services;
 
 namespace FFP.Purchasing.Tablet;
@@ -9,11 +8,16 @@ public static class MauiProgram
     {
         var builder = MauiApp.CreateBuilder();
         builder.UseMauiApp<App>();
-#if DEBUG
-        builder.Logging.AddDebug();
-#endif
-        var apiBase = Preferences.Default.Get("PurchasingApiBaseUrl", "https://purchasing.ffpja.org/");
-        builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(apiBase) });
+
+        var apiBase = Preferences.Default.Get(
+            "PurchasingApiBaseUrl",
+            "http://10.0.2.2:5088/");
+
+        builder.Services.AddSingleton(new HttpClient
+        {
+            BaseAddress = new Uri(apiBase)
+        });
+
         builder.Services.AddSingleton<IAttachmentService, AttachmentService>();
         builder.Services.AddSingleton<IPurchaseStore, PurchaseStore>();
         builder.Services.AddSingleton<IReferenceDataService, ReferenceDataService>();
@@ -24,6 +28,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IAuditService, AuditService>();
         builder.Services.AddSingleton<IPendingSyncWorker, PendingSyncWorker>();
         builder.Services.AddSingleton<MainPage>();
+
         return builder.Build();
     }
 }
