@@ -1,23 +1,13 @@
 using FFP.Purchasing.Tablet.Services;
-
 namespace FFP.Purchasing.Tablet;
-
 public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
         builder.UseMauiApp<App>();
-
-        var apiBase = Preferences.Default.Get(
-            "PurchasingApiBaseUrl",
-            "http://10.0.2.2:5088/");
-
-        builder.Services.AddSingleton(new HttpClient
-        {
-            BaseAddress = new Uri(apiBase)
-        });
-
+        var apiBase = Preferences.Default.Get("PurchasingApiBaseUrl", "http://10.0.2.2:5088/");
+        builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(apiBase), Timeout = TimeSpan.FromSeconds(12) });
         builder.Services.AddSingleton<IAttachmentService, AttachmentService>();
         builder.Services.AddSingleton<IPurchaseStore, PurchaseStore>();
         builder.Services.AddSingleton<IReferenceDataService, ReferenceDataService>();
@@ -28,7 +18,6 @@ public static class MauiProgram
         builder.Services.AddSingleton<IAuditService, AuditService>();
         builder.Services.AddSingleton<IPendingSyncWorker, PendingSyncWorker>();
         builder.Services.AddSingleton<MainPage>();
-
         return builder.Build();
     }
 }
