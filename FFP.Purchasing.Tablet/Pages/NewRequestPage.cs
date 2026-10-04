@@ -3,37 +3,49 @@ using FFP.Purchasing.Tablet.Services;
 
 namespace FFP.Purchasing.Tablet.Pages;
 
-public sealed class NewRequestPage : ContentPage
+// Kept as a compatibility entry point for older navigation paths.
+// The actual presentation is the shared tablet requisition editor.
+public sealed class NewRequestPage : TabletPage
 {
     private readonly IPurchaseStore _store;
     private readonly IReferenceDataService _reference;
-    private readonly Entry _requestor = new() { Placeholder = "Requestor" };
-    private readonly Entry _department = new() { Placeholder = "Department" };
-    private readonly Picker _type = new() { Title = "Request type", ItemsSource = new[] { "Purchase Order", "Payment Requisition" } };
-    private readonly Picker _vendor = new() { Title = "Vendor" };
-    private readonly Entry _purpose = new() { Placeholder = "Purpose / justification" };
-    private IReadOnlyList<Vendor> _vendors = [];
 
     public NewRequestPage(IPurchaseStore store, IReferenceDataService reference)
+        : base("New Request")
     {
-        _store=store; _reference=reference; Title="New Request"; _type.SelectedIndex=0;
-        var next=new Button { Text="Create & Add Items" };
-        next.Clicked += Save;
-        Content=new ScrollView { Content=new VerticalStackLayout { Padding=24, Spacing=12,
-            Children={ new Label { Text="New Purchase Request", FontSize=28, FontAttributes=FontAttributes.Bold },
-                _type,_requestor,_department,_vendor,_purpose,next }}};
+        _store = store;
+        _reference = reference;
+
+        var po = Ui.Primary("Purchase Order Requisition");
+        po.Clicked += async (_, _) => await CreateAsync(RequestType.PurchaseOrder);
+
+        var payment = Ui.Secondary("Payment Requisition");
+        payment.Clicked += async (_, _) => await CreateAsync(RequestType.PaymentRequisition);
+
+        Body.Children.Add(Ui.Hint("Choose the requisition type."));
+        Body.Children.Add(po);
+        Body.Children.Add(payment);
     }
-    protected override async void OnAppearing()
+
+    private async Task CreateAsync(RequestType type)
     {
-        base.OnAppearing(); await _reference.RefreshVendorsAsync(); _vendors=await _reference.GetVendorsAsync();
-        _vendor.ItemsSource=_vendors.Select(x=>x.Name).ToList();
-    }
-    private async void Save(object? s, EventArgs e)
-    {
-        var v=_vendor.SelectedIndex>=0 && _vendor.SelectedIndex<_vendors.Count ? _vendors[_vendor.SelectedIndex] : null;
-        var r=new PurchaseRequest { Type=_type.SelectedIndex==1?RequestType.PaymentRequisition:RequestType.PurchaseOrder,
-            Requestor=_requestor.Text??"", Department=_department.Text??"", VendorId=v?.Id, VendorName=v?.Name, Purpose=_purpose.Text??"" };
-        await _store.SaveAsync(r);
-        await Navigation.PushAsync(new RequestEditorPage(r,_store,Handler!.MauiContext!.Services.GetRequiredService<ILocalItemCache>(),Handler!.MauiContext!.Services.GetRequiredService<IAttachmentService>(),Handler!.MauiContext!.Services.GetRequiredService<ISyncService>(),Handler!.MauiContext!.Services.GetRequiredService<IRequestValidator>(),Handler!.MauiContext!.Services.GetRequiredService<IAuditService>()));
+        var request = new PurchaseRequest
+        {
+            Type = type,
+            Requestor = "Maria Santos",
+            Department = "Operations"
+        };
+
+        await _store.SaveAsync(request);
+        var s = Handler!.MauiContext!.Services;
+        await Navigation.PushAsync(new RequestEditorPage(
+            request,
+            _store,
+            s.GetRequiredService<ILocalItemCache>(),
+            s.GetRequiredService<IAttachmentService>(),
+            s.GetRequiredService<ISyncService>(),
+            s.GetRequiredService<IRequestValidator>(),
+            s.GetRequiredService<IAuditService>(),
+            _reference));
     }
 }
