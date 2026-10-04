@@ -62,7 +62,7 @@ internal static class Ui
     };
 }
 
-internal abstract class TabletPage : ContentPage
+public abstract class TabletPage : ContentPage
 {
     protected readonly VerticalStackLayout Body = new() { Spacing = 14 };
     private readonly Label _status = new()
@@ -120,8 +120,8 @@ internal abstract class TabletPage : ContentPage
                 new(GridLength.Auto)),
             Padding = new Thickness(20, 14, 20, 5)
         };
-        header.Add(Ui.H1(title), 0);
-        header.Add(_status, 1);
+        header.Add(Ui.H1(title), 0, 0);
+        header.Add(_status, 1, 0);
 
         var scroll = new ScrollView
         {
@@ -175,10 +175,10 @@ internal abstract class TabletPage : ContentPage
         };
         more.Clicked += async (_, _) => await Navigation.PushAsync(new SettingsPage());
 
-        bottom.Add(home, 0);
-        bottom.Add(requests, 1);
-        bottom.Add(sync, 2);
-        bottom.Add(more, 3);
+        bottom.Add(home, 0, 0);
+        bottom.Add(requests, 1, 0);
+        bottom.Add(sync, 2, 0);
+        bottom.Add(more, 3, 0);
 
         Content = new Grid
         {
