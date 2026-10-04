@@ -4,28 +4,135 @@ using FFP.Purchasing.Tablet.Services;
 
 namespace FFP.Purchasing.Tablet;
 
-public partial class MainPage : ContentPage
+public sealed class MainPage : TabletPage
 {
-    private readonly IAttachmentService _attachments;
     private readonly IPurchaseStore _store;
     private readonly IReferenceDataService _reference;
-    private readonly ISyncService _sync;
-    private readonly IAppDiagnostics _diagnostics;
-    private readonly List<AttachmentItem> _items = [];
+    private readonly IPendingSyncWorker _worker;
+    private readonly VerticalStackLayout _recent = new() { Spacing = 8 };
 
-    public MainPage(IAttachmentService attachments, IPurchaseStore store, IReferenceDataService reference, ISyncService sync, IAppDiagnostics diagnostics)
+    public MainPage(IPurchaseStore store, IReferenceDataService reference, IPendingSyncWorker worker)
+        : base("Welcome")
     {
-        InitializeComponent(); _attachments=attachments; _store=store; _reference=reference; _sync=sync; _diagnostics=diagnostics;
-        Title="FFP Purchasing";
-        ToolbarItems.Add(new ToolbarItem("New",null,async()=>await Navigation.PushAsync(new NewRequestPage(_store,_reference))));
-        ToolbarItems.Add(new ToolbarItem("Requests",null,async()=>await Navigation.PushAsync(new RequestsPage(_store,Handler!.MauiContext!.Services.GetRequiredService<ILocalItemCache>(),_attachments,_sync,Handler!.MauiContext!.Services.GetRequiredService<IRequestValidator>(),Handler!.MauiContext!.Services.GetRequiredService<IAuditService>()))));
-        ToolbarItems.Add(new ToolbarItem("Diagnostics",null,async()=>await Navigation.PushAsync(new DiagnosticsPage(_diagnostics))));
-        ToolbarItems.Add(new ToolbarItem("Settings",null,async()=>await Navigation.PushAsync(new SettingsPage())));
+        _store = store;
+        _reference = reference;
+        _worker = worker;
+
+        Body.Add(new Label
+        {
+            Text = "Create and track Purchase Order and Payment Requisitions",
+            TextColor = Ui.Muted
+        });
+
+        var choices = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitionCollection(
+                new(GridLength.Star), new(GridLength.Star)),
+            ColumnSpacing = 12
+        };
+        choices.Add(RequestCard("🛒", "Purchase Order Requisition",
+            "Request goods or services from an approved vendor.", RequestType.PurchaseOrder), 0);
+        choices.Add(RequestCard("▣", "Payment Requisition",
+            "Request payment to a vendor or other payee.", RequestType.PaymentRequisition), 1);
+
+        Body.Add(choices);
+        Body.Add(Ui.H2("My Requests"));
+        Body.Add(_recent);
     }
-    protected override async void OnAppearing(){base.OnAppearing();await ImportSharedInboxAsync();}
-    private async void TakePhoto_Clicked(object sender,EventArgs e){try{var item=await _attachments.CapturePhotoAsync();if(item!=null){_items.Add(item);RenderAttachments();}}catch(Exception ex){await DisplayAlert("Attachment error",ex.Message,"OK");}}
-    private async void ChooseFiles_Clicked(object sender,EventArgs e){try{_items.AddRange(await _attachments.PickFilesAsync());RenderAttachments();}catch(Exception ex){await DisplayAlert("Attachment error",ex.Message,"OK");}}
-    private async void ImportShared_Clicked(object sender,EventArgs e){await ImportSharedInboxAsync();}
-    private async Task ImportSharedInboxAsync(){foreach(var path in SharedAttachmentInbox.Drain()){try{_items.Add(await _attachments.ImportFileAsync(path,"Outlook / Share"));}catch{}}RenderAttachments();}
-    private void RenderAttachments(){AttachmentList.Children.Clear();EmptyLabel.IsVisible=_items.Count==0;foreach(var item in _items){AttachmentList.Children.Add(new Border{Stroke=Color.FromArgb("#D9E2EC"),Padding=10,Content=new Label{Text=$"{item.FileName} • {item.Source} • Pending Sync"}});}}
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        _ = _worker.RunOnceAsync();
+
+        if ((await _reference.GetVendorCacheInfoAsync()).Count == 0)
+            _ = _reference.RefreshVendorsAsync();
+
+        await RenderRecentAsync();
+    }
+
+    private Border RequestCard(string icon, string title, string subtitle, RequestType type)
+    {
+        var button = Ui.Primary(type == RequestType.PurchaseOrder
+            ? "Create PO Requisition"
+            : "Create Payment Requisition");
+        button.Clicked += async (_, _) => await CreateAsync(type);
+
+        return Ui.Card(new VerticalStackLayout
+        {
+            Spacing = 10,
+            Children =
+            {
+                new Label { Text = icon, FontSize = 36, TextColor = Ui.Blue },
+                Ui.H2(title),
+                Ui.Hint(subtitle),
+                button
+            }
+        });
+    }
+
+    private async Task CreateAsync(RequestType type)
+    {
+        var request = new PurchaseRequest
+        {
+            Type = type,
+            Requestor = "Maria Santos",
+            Department = "Operations"
+        };
+        await _store.SaveAsync(request);
+
+        var s = Handler!.MauiContext!.Services;
+        await Navigation.PushAsync(new RequestEditorPage(
+            request,
+            _store,
+            s.GetRequiredService<ILocalItemCache>(),
+            s.GetRequiredService<IAttachmentService>(),
+            s.GetRequiredService<ISyncService>(),
+            s.GetRequiredService<IRequestValidator>(),
+            s.GetRequiredService<IAuditService>(),
+            _reference));
+    }
+
+    private async Task RenderRecentAsync()
+    {
+        _recent.Clear();
+        foreach (var r in (await _store.GetAllAsync())
+                     .OrderByDescending(x => x.UpdatedAt).Take(5))
+        {
+            var row = new Grid
+            {
+                ColumnDefinitions = new ColumnDefinitionCollection(
+                    new(GridLength.Star), new(GridLength.Auto)),
+                Padding = 10
+            };
+
+            row.Add(new VerticalStackLayout
+            {
+                Children =
+                {
+                    new Label
+                    {
+                        Text = r.ServerNumber ?? r.LocalNumber,
+                        FontAttributes = FontAttributes.Bold,
+                        TextColor = Ui.Blue
+                    },
+                    new Label
+                    {
+                        Text = $"{r.Type} • {r.VendorName} • {r.Total:C2}",
+                        FontSize = 12,
+                        TextColor = Ui.Muted
+                    }
+                }
+            }, 0);
+
+            row.Add(new Label
+            {
+                Text = r.Status.ToString(),
+                TextColor = r.Status == RequestStatus.PendingSync ? Colors.DarkOrange : Ui.Ink,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 1);
+
+            _recent.Add(Ui.Card(row, new Thickness(8)));
+        }
+    }
 }
