@@ -30,8 +30,8 @@ public sealed class SyncStatusPage : TabletPage
             await Load();
         };
 
-        Body.Add(_box);
-        Body.Add(now);
+        Body.Children.Add(_box);
+        Body.Children.Add(now);
     }
 
     protected override async void OnAppearing()
@@ -42,12 +42,12 @@ public sealed class SyncStatusPage : TabletPage
 
     private async Task Load()
     {
-        _box.Clear();
+        _box.Children.Clear();
         var meta = await _reference.GetVendorCacheInfoAsync();
         var all = await _store.GetAllAsync();
         var reachable = await _sync.IsBridgeReachableAsync();
 
-        _box.Add(Ui.Card(new Label
+        _box.Children.Add(Ui.Card(new Label
         {
             Text =
                 $"FFP Manager Bridge: {(reachable ? "Reachable" : "Not reachable")}
