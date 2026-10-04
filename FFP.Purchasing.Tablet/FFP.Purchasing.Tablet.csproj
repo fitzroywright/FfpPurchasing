@@ -9,8 +9,11 @@
     <Nullable>enable</Nullable>
     <ApplicationTitle>FFP Purchasing</ApplicationTitle>
     <ApplicationId>org.foodforthepoorja.purchasing</ApplicationId>
-    <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
-    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>0.2.0</ApplicationDisplayVersion>
+    <ApplicationVersion>2</ApplicationVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">26.0</SupportedOSPlatformVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <MauiXaml Remove="MainPage.xaml" />
+  </ItemGroup>
 </Project>
