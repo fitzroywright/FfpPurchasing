@@ -18,7 +18,7 @@ public sealed class MainPage : TabletPage
         _reference = reference;
         _worker = worker;
 
-        Body.Add(new Label
+        Body.Children.Add(new Label
         {
             Text = "Create and track Purchase Order and Payment Requisitions",
             TextColor = Ui.Muted
@@ -31,9 +31,9 @@ public sealed class MainPage : TabletPage
             ColumnSpacing = 12
         };
         choices.Add(RequestCard("🛒", "Purchase Order Requisition",
-            "Request goods or services from an approved vendor.", RequestType.PurchaseOrder), 0);
+            "Request goods or services from an approved vendor.", RequestType.PurchaseOrder), 0, 0);
         choices.Add(RequestCard("▣", "Payment Requisition",
-            "Request payment to a vendor or other payee.", RequestType.PaymentRequisition), 1);
+            "Request payment to a vendor or other payee.", RequestType.PaymentRequisition), 1, 0);
 
         Body.Add(choices);
         Body.Add(Ui.H2("My Requests"));
@@ -95,7 +95,7 @@ public sealed class MainPage : TabletPage
 
     private async Task RenderRecentAsync()
     {
-        _recent.Clear();
+        _recent.Children.Clear();
         foreach (var r in (await _store.GetAllAsync())
                      .OrderByDescending(x => x.UpdatedAt).Take(5))
         {
@@ -123,16 +123,16 @@ public sealed class MainPage : TabletPage
                         TextColor = Ui.Muted
                     }
                 }
-            }, 0);
+            }, 0, 0);
 
             row.Add(new Label
             {
                 Text = r.Status.ToString(),
                 TextColor = r.Status == RequestStatus.PendingSync ? Colors.DarkOrange : Ui.Ink,
                 VerticalTextAlignment = TextAlignment.Center
-            }, 1);
+            }, 1, 0);
 
-            _recent.Add(Ui.Card(row, new Thickness(8)));
+            _recent.Children.Add(Ui.Card(row, new Thickness(8)));
         }
     }
 }
