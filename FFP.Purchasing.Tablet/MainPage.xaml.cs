@@ -35,9 +35,9 @@ public sealed class MainPage : TabletPage
         choices.Add(RequestCard("▣", "Payment Requisition",
             "Request payment to a vendor or other payee.", RequestType.PaymentRequisition), 1, 0);
 
-        Body.Add(choices);
-        Body.Add(Ui.H2("My Requests"));
-        Body.Add(_recent);
+        Body.Children.Add(choices);
+        Body.Children.Add(Ui.H2("My Requests"));
+        Body.Children.Add(_recent);
     }
 
     protected override async void OnAppearing()
