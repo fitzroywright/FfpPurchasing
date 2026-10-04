@@ -32,7 +32,7 @@ public sealed class AppDiagnostics(HttpClient http) : IAppDiagnostics
 
     private async Task<DiagnosticResult> TestApiAsync()
     {
-        if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
+        if (Connectivity.Current.NetworkAccess == NetworkAccess.None)
             return new("FFP.PUR.L5.005", "Purchasing API reachability", false, "Offline");
         try
         {
